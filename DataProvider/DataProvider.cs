@@ -268,13 +268,11 @@ namespace Bunifu.DataProvider
             string key = tiento;
             try
             {
-
                 string[] partsDay;
                 //partsDay = DateTime.Now.ToShortDateString().Split('/');
                 partsDay = DateTime.Now.ToString("yyyy-MM-dd").Split('-');
                 //Ví dụ 07/08/2009
-                string d = String.Format("{0}{1}{2}", partsDay[0], partsDay[1], partsDay[2]);
-                key = key + d;
+                string d = String.Format("{0}-{1}-{2}", partsDay[0], partsDay[1], partsDay[2]);
                 string[] partsTime;
                 partsTime = DateTime.Now.ToLongTimeString().Split(':');
                 //Ví dụ 7:08:03 PM hoặc 7:08:03 AM
@@ -286,8 +284,8 @@ namespace Bunifu.DataProvider
                 //Xóa ký tự trắng và PM hoặc AM
                 partsTime[2] = partsTime[2].Remove(2, 3);
                 string t;
-                t = String.Format("_{0}{1}{2}", partsTime[0], partsTime[1], partsTime[2]);
-                key = key + t;
+                t = String.Format("_{0}:{1}:{2}", partsTime[0], partsTime[1], partsTime[2]);
+                key = key + d + t;
 
             }
             catch (Exception)

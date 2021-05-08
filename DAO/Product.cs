@@ -27,21 +27,21 @@ namespace Bunifu.DAO
         }
 
 
-        public DataTable LoadProductItems()
+        internal DataTable LoadProductItems()
         {
             string query = "call ShowProduce";
 
             return DataProvider.DataProvider.Instance.ExecuteQuery(query);
         }
 
-        public DataTable FillProductComboBox()
+        internal DataTable FillProductComboBox()
         {
             string query = "select * from chatlieu";
 
             return DataProvider.DataProvider.Instance.ExecuteQuery(query);
         }
 
-        public void UpdateProductItemInformation(string _productname,string _productMaterialID, int _productQuantity, double _productImportPrice, double _productExportPrice, string _productDescription, string _productID)
+        internal void UpdateProductItemInformation(string _productname,string _productMaterialID, int _productQuantity, double _productImportPrice, double _productExportPrice, string _productDescription, string _productID)
         {
             string query = "call SP_UpdateProduct( @proName , @proMatID , @proQuantily , @proPurPrice , @proSalePrice , @proDes , @proID )";
 
@@ -56,7 +56,7 @@ namespace Bunifu.DAO
             }
         }
 
-        public void InsertProductItem(string _productID, string _productName, string _productMaterialID, int _productQuantity, double _productImportPrice, double _productExportPrice, string _productDescription)
+        internal void InsertProductItem(string _productID, string _productName, string _productMaterialID, int _productQuantity, double _productImportPrice, double _productExportPrice, string _productDescription)
         {
             string query = "call SP_InsertProduct( @p_idHang , @p_tenHang , @p_idChatlieu , @p_soLuong , @p_giaMua , @p_giaBan , @p_ghiChu )";
 
@@ -71,7 +71,7 @@ namespace Bunifu.DAO
             }
         }
 
-        public void DeleteProductItem(string _productID)
+        internal void DeleteProductItem(string _productID)
         {
             string query =  "call SP_DeleteProduct( @_productID )";
 
@@ -84,6 +84,15 @@ namespace Bunifu.DAO
 
                 throw;
             }
+        }
+
+        internal bool ProductExist(string _productID)
+        {
+            string query = "select * from hanghoa where id_hang = @id_hang ";
+
+            DataTable result = DataProvider.DataProvider.Instance.ExecuteQuery(query, new object[] { _productID });
+
+            return result.Rows.Count > 0;
         }
     }
 }

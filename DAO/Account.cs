@@ -69,5 +69,27 @@ namespace Bunifu.DAO
             }
         }
 
+        internal void DeleteAccountByID(int _id)
+        {
+            string query = "call SP_DeleteUser( @_id )";
+
+            try
+            {
+                DataProvider.DataProvider.Instance.ExecuteNonQuery(query, new object[] { _id });
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        internal DataTable LoadEmployeeAccount()
+        {
+            string query = "call ShowUser()";
+
+            return DataProvider.DataProvider.Instance.ExecuteQuery(query);
+        }
+
     }
 }
