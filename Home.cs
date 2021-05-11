@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using MySql.Data.MySqlClient;
 using Bunifu.Connection;
 using Bunifu.DAO;
+using Bunifu.Model;
+
 namespace Bunifu
 {
     public enum TabPagesIndex
@@ -53,6 +55,8 @@ namespace Bunifu
             LoadCustomerItems();
 
             LoadEmployeeItems();
+
+            LoadInvoiceList();
         }
 
         void UpdateForm(User _user)
@@ -841,7 +845,7 @@ namespace Bunifu
 
             try
             {
-                Customer.Instance.InsertCustomerItem(customerID, customerName, customerAddress, customerTel);
+                Customer.Instance.InsertCustomerItem(customerName, customerAddress, customerTel);
                 string insertCustomerInfo = string.Format("Insert material {0} successful", customerName);
                 DialogResult dr = MessageBox.Show(insertCustomerInfo, "Insert Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 if (dr == DialogResult.OK)
@@ -1202,5 +1206,424 @@ namespace Bunifu
         }
 
 
+        //=================================================== CHECK OUT
+
+        void LoadInvoiceList()
+        {
+            cboInvoiceList.DataSource = Invoice.Instance.FillInvoiceListComboBox();
+            cboInvoiceList.ValueMember = "id_hd";
+            cboInvoiceList.DisplayMember = "id_hd";
+            cboInvoiceList.SelectedIndex = -1;
+
+            cboInvoiceIDCustomer.DataSource = Customer.Instance.LoadCustomerItems();
+            cboInvoiceIDCustomer.ValueMember = "ID khach hang";
+            cboInvoiceIDCustomer.SelectedIndex = -1;
+
+            cboInvoiceProduct.DataSource = Product.Instance.LoadProductItems();
+            cboInvoiceProduct.ValueMember = "ID Hang";
+            cboInvoiceProduct.DisplayMember = "Ten mat hang";
+            cboInvoiceProduct.SelectedIndex = -1;
+        }
+
+        void Numbervalidation(KeyPressEventArgs e)
+        {
+            if (((e.KeyChar >= '0') && (e.KeyChar <= '9')) || (Convert.ToInt32(e.KeyChar) == 8))
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                MessageBox.Show("Number input only","Validation",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                e.Handled = true;
+            }
+        }
+
+        string CreateInvoiceKey(string key)
+        {
+            try
+            {
+                string d = DateTime.Now.ToString("ddMMyyyy");
+                string t = DateTime.Now.ToString("h:mm-tt");
+
+                key = string.Format("{0}-{1}-{2}",key,d,t);
+
+                return key;
+            }
+            catch (Exception)
+            {
+                return null;
+                throw;
+            }
+        }
+
+        string GetDateTime(string _dateFormat, string _timeFormat)
+        {
+            try
+            {
+                string d = DateTime.Now.ToString(_dateFormat);
+                string t = DateTime.Now.ToString(_timeFormat);
+
+                string r = string.Format("{0} {1}", d, t);
+
+                return r;
+
+            }
+            catch (Exception)
+            {
+                return null;
+                throw;
+            }
+        }
+
+        private void NewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            lbInvoiceID.Text = CreateInvoiceKey("HD");
+            lbInvoiceDate.Text = GetDateTime("dd/MMM/yyyy", "h:mm tt");
+            lbInvoiceStaffID.Text = id.ToString();
+            lbInvoiceStaffName.Text = displayname;
+
+            //Cusomter
+            cboInvoiceIDCustomer.Enabled = true;
+            cboInvoiceIDCustomer.Focus();
+
+            //Product
+            cboInvoiceProduct.Enabled = true;
+            txtInvoiceDiscount.Enabled = true;
+            txtInvoiceDiscount.ReadOnly = false;
+            txtInvoiceQuantity.Enabled = true;
+            txtInvoiceQuantity.ReadOnly = false;
+
+            btnInvoiceAddProduct.Enabled = true;
+        }
+
+        void LoadInvoiceInformation(Bill _bill, Client _client)
+        {
+            lbInvoiceStaffID.Text = _bill.StaffID.ToString();
+            lbInvoiceTotal.Text = _bill.Total.ToString();
+            lbInvoiceID.Text = _bill.BillID;
+            lbInvoiceDate.Text = _bill.Date;
+            lbInvoiceStaffName.Text = Account.Instance.GetUserByID(_bill.StaffID);
+
+            txtInvoiceCustomerName.Text = _client.Name;
+            txtInvoiceCustomerAddress.Text = _client.Address;
+            txtInvoiceTel.Text = _client.Tel;
+            cboInvoiceIDCustomer.SelectedIndex = _client.Id - 1;
+
+            dgvInvoiceItems.DataSource = Invoice.Instance.GetInvoiceItem(_bill.BillID);
+            dgvInvoiceItems.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        private void BtnFindInvoice_Click(object sender, EventArgs e)
+        {
+            if (cboInvoiceList.SelectedIndex == -1)
+            {
+                MessageBox.Show("Choose a receipt to find", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                cboInvoiceList.Focus();
+                return;
+            }
+
+            try
+            {
+                
+                Bill bill = Invoice.Instance.GetBillByBillID(cboInvoiceList.SelectedValue.ToString());
+
+                Client client = Customer.Instance.GetCustomerByID(bill.CustomerID);
+
+                LoadInvoiceInformation(bill,client);
+                //LoadInvoiceGridView();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void TxtInvoiceQuantity_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Numbervalidation(e);
+        }
+
+        private void TxtInvoiceDiscount_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Numbervalidation(e);
+        }
+
+        
+        private void TxtInvoiceTel_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            Numbervalidation(e);
+        }
+
+        private void NewCustomerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            txtInvoiceCustomerName.Enabled = true;
+            txtInvoiceCustomerAddress.Enabled = true;
+            txtInvoiceTel.Enabled = true;
+
+            txtInvoiceCustomerName.ReadOnly = false;
+            txtInvoiceCustomerAddress.ReadOnly = false;
+            txtInvoiceTel.ReadOnly = false;
+
+            cboInvoiceIDCustomer.SelectedIndex = -1;
+
+            bunifuButton1.Enabled = true;
+        }
+
+        private void CboInvoiceIDCustomer_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Client client = Customer.Instance.GetCustomerByID(cboInvoiceIDCustomer.SelectedIndex + 1);
+
+            if(client == null)
+            {
+                txtInvoiceCustomerName.Text = "";
+                txtInvoiceCustomerAddress.Text = "";
+                txtInvoiceTel.Text = "";
+                return;
+            }
+
+            txtInvoiceCustomerName.Text = client.Name;
+            txtInvoiceCustomerAddress.Text = client.Address;
+            txtInvoiceTel.Text = client.Tel;
+        }
+
+        float exportPrice;
+
+        private void CboInvoiceProduct_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //ProductItem productItem = Product.Instance.GetProductByID(cboInvoiceProduct.SelectedValue.ToString());
+
+            if(cboInvoiceProduct.SelectedValue == null)
+            {
+                return;
+            }
+
+            ProductItem productItem = Product.Instance.GetProductByID(cboInvoiceProduct.SelectedValue.ToString());
+
+            if (productItem == null)
+            {
+                return;
+            }
+
+            exportPrice = productItem.ExportPrice;
+
+            lbInvoiceUnitPrice.Text = string.Format("{0} VND", exportPrice.ToString());
+        }
+
+        private void btnInvoiceAddProduct_Click(object sender, EventArgs e)
+        {
+            string invoiceID = lbInvoiceID.Text;
+            string invoiceDate = lbInvoiceDate.Text;
+            string invoiceStaffID = lbInvoiceStaffID.Text;
+            string invoiceStaffName = lbInvoiceStaffName.Text;
+
+
+            int invoiceCustomerID = cboInvoiceIDCustomer.SelectedIndex;
+
+            string invoiceTotalPrice = lbInvoiceTotal.Text;
+
+            string invoiceProductID = cboInvoiceProduct.SelectedValue.ToString();
+
+            int invoiceProductQuantity = Convert.ToInt32( txtInvoiceQuantity.Text.Trim());
+
+            try
+            {
+                if (!Invoice.Instance.InvoiceExist(invoiceID))
+                {
+                    Invoice.Instance.CreateNewInvoice(invoiceID,invoiceStaffID, invoiceDate, invoiceCustomerID,invoiceTotalPrice);
+                }
+
+                if (txtInvoiceQuantity.Text.Length == 0 || (txtInvoiceQuantity.Text == "0"))
+                {
+                    MessageBox.Show("You must enter Product Quantily", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtInvoiceQuantity.Focus();
+                    txtInvoiceQuantity.Text = "";
+                    return;
+                }
+
+                if (txtInvoiceDiscount.Text.Length == 0)
+                {
+                    MessageBox.Show("You must enter Product Discount", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtInvoiceDiscount.Focus();
+                    txtInvoiceDiscount.Text = "";
+                    return;
+                }
+
+                if (Invoice.Instance.ProductInBillDetail(invoiceProductID, invoiceID))
+                {
+                    MessageBox.Show("Product already have, Enter another product type", "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    cboInvoiceProduct.Focus();
+                    return;
+                }
+
+
+                float quantity;
+
+                string productID;
+
+                string invoiceDiscount = txtInvoiceDiscount.Text.Trim();
+
+                ProductItem productItem = Product.Instance.GetProductByID(cboInvoiceProduct.SelectedValue.ToString());
+
+                quantity = productItem.Quantity;
+                productID = productItem.Id;
+
+
+                if (Convert.ToDouble(invoiceProductQuantity) > quantity)
+                {
+                    MessageBox.Show("This product has remained " + quantity, "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtInvoiceQuantity.Text = "";
+                    txtInvoiceQuantity.Focus();
+                    return;
+                }
+                else
+                {
+                    try
+                    {
+                        //DataProvider.Instance.ExecuteNonQuery(query, new object[] { invoiceID, proID, proQuantily, proPrice, proDiscount, thanhtien });
+
+                        Invoice.Instance.CreateNewInvoiceDetail(invoiceID, productID, invoiceProductQuantity.ToString(), exportPrice.ToString(), invoiceDiscount, GetSubTotal().ToString());
+
+                        //DataProvider.Instance.ExecuteNonQuery(queryInsert, new object[] { invoiceID, proID, proQuantily, proPrice, proDiscount, thanhtien });
+
+                        //LoadInvoiceGridView();
+
+                        dgvInvoiceItems.DataSource = Invoice.Instance.GetInvoiceItem(lbInvoiceID.Text);
+                    }
+                    catch (Exception error)
+                    {
+                        MessageBox.Show("Error: " + error, "Alert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                // Update Product quantily to Database table hanghoa
+
+                double soLuongConLai, tong, Tongmoi;
+
+
+
+                soLuongConLai = quantity - Convert.ToDouble(invoiceProductQuantity);
+
+                Invoice.Instance.UpdateProductQuantity(soLuongConLai, productID);
+
+                //Update Total price of Invoice
+
+                string queryTongtien = "Select tongtien from HDban where id_hd = '" + invoiceID + "'";
+
+                tong = Convert.ToDouble(DataProvider.DataProvider.Instance.GetFieldValues(queryTongtien));
+
+
+
+                Tongmoi = tong + Convert.ToDouble(GetSubTotal());
+
+                string query = "call SP_UpdatePriceInvoice( @tongmoi , @id_hd )";
+
+                DataProvider.DataProvider.Instance.ExecuteNonQuery(query, new object[] { Tongmoi, invoiceID });
+
+                lbInvoiceTotal.Text = Tongmoi.ToString();
+
+                dgvInvoiceItems.DataSource = Invoice.Instance.GetInvoiceItem(lbInvoiceID.Text);
+                cboInvoiceList.DataSource = Invoice.Instance.FillInvoiceListComboBox();
+                //ResetValuesPro();
+                //btnSave.Focus();
+                //btnPrintBill.Enabled = true;
+                //btnNew.Enabled = true;
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+
+        }
+
+        private void TxtInvoiceQuantity_TextChanged(object sender, EventArgs e)
+        {
+            lbInvoiceSubTotal.Text = string.Format("{0} VND", GetSubTotal());
+        }
+
+        private void TxtInvoiceDiscount_TextChanged(object sender, EventArgs e)
+        {
+            lbInvoiceSubTotal.Text = string.Format("{0} VND", GetSubTotal());
+        }
+
+        double GetSubTotal()
+        {
+            double tongTien, soLuong, donGia, giamGia;
+
+            if (txtInvoiceQuantity.Text == "")
+            {
+                soLuong = 0;
+            }
+            else
+            {
+                soLuong = Convert.ToDouble(txtInvoiceQuantity.Text);
+            }
+
+            if (txtInvoiceDiscount.Text == "")
+            {
+                giamGia = 0;
+            }
+            else
+            {
+                giamGia = Convert.ToDouble(txtInvoiceDiscount.Text);
+            }
+
+                donGia = Convert.ToDouble(exportPrice);
+
+            tongTien = (soLuong * donGia) - (soLuong * donGia * giamGia / 100);
+
+            return tongTien;
+        }
+
+        private void BunifuButton1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Customer.Instance.InsertCustomerItem(txtInvoiceCustomerName.Text.Trim(), txtInvoiceCustomerAddress.Text.Trim(), Convert.ToInt32(txtInvoiceTel.Text.Trim()));
+                string insertCustomerInfo = string.Format("Insert customer {0} successful. Do you want to add more customer ?", txtInvoiceCustomerName.Text.Trim());
+                DialogResult dr = MessageBox.Show(insertCustomerInfo, "Insert Successful", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                if (dr == DialogResult.Yes)
+                {
+                    //Refresh product data grid view 
+                    txtInvoiceCustomerName.Text = "";
+                    txtInvoiceCustomerAddress.Text = "";
+                    txtInvoiceTel.Text = "";
+
+
+                    cboInvoiceIDCustomer.DataSource = Customer.Instance.LoadCustomerItems();
+                    cboInvoiceIDCustomer.ValueMember = "ID khach hang";
+                    cboInvoiceIDCustomer.SelectedIndex = -1;
+                }
+                else
+                {
+                    bunifuButton1.Enabled = false;
+
+                    txtInvoiceCustomerName.Enabled = false;
+                    txtInvoiceCustomerAddress.Enabled = false;
+                    txtInvoiceTel.Enabled = false;
+
+                    txtInvoiceCustomerName.ReadOnly = true;
+                    txtInvoiceCustomerAddress.ReadOnly = true;
+                    txtInvoiceTel.ReadOnly = true;
+
+                    txtInvoiceCustomerName.Text = "";
+                    txtInvoiceCustomerAddress.Text = "";
+                    txtInvoiceTel.Text = "";
+
+
+                    cboInvoiceIDCustomer.DataSource = Customer.Instance.LoadCustomerItems();
+                    cboInvoiceIDCustomer.ValueMember = "ID khach hang";
+                    cboInvoiceIDCustomer.SelectedIndex = -1;
+
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+        }
     }
 }

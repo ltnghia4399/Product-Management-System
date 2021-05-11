@@ -84,6 +84,7 @@
     <Compile Include="DAO\Account.cs" />
     <Compile Include="Connection\Connection.cs" />
     <Compile Include="DAO\Customer.cs" />
+    <Compile Include="DAO\Invoice.cs" />
     <Compile Include="DAO\Material.cs" />
     <Compile Include="DAO\Product.cs" />
     <Compile Include="DataProvider\DataProvider.cs" />
@@ -99,6 +100,9 @@
     <Compile Include="Home.Designer.cs">
       <DependentUpon>Home.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\Bill.cs" />
+    <Compile Include="Model\Client.cs" />
+    <Compile Include="Model\ProductItem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DAO\RegisterAccount.cs" />

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
-
+using Bunifu.Model;
 namespace Bunifu.DAO
 {
     public class Product
@@ -26,6 +26,19 @@ namespace Bunifu.DAO
             set => instance = value;
         }
 
+        internal ProductItem GetProductByID(string _productID)
+        {
+            string query = "select * from hanghoa where id_hang = @id_hang ";
+
+            DataTable data = DataProvider.DataProvider.Instance.ExecuteQuery(query, new object[] { _productID });
+
+            foreach (DataRow item in data.Rows)
+            {
+                return new ProductItem(item);
+            }
+
+            return null;
+        }
 
         internal DataTable LoadProductItems()
         {

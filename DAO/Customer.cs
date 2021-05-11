@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Bunifu.DataProvider;
-
+using Bunifu.Model;
 namespace Bunifu.DAO
 {
     public class Customer
@@ -43,13 +43,13 @@ namespace Bunifu.DAO
             return result.Rows.Count > 0;
         }
 
-        internal void InsertCustomerItem(string _customerID, string _customerName, string _customerAdress, int _customerTel)
+        internal void InsertCustomerItem(string _customerName, string _customerAdress, int _customerTel)
         {
-            string query = "Call SP_NewCustomer( @p_ID , @p_Name , @p_Address , @p_Tel );";
+            string query = "Call SP_NewCustomer( @p_Name , @p_Address , @p_Tel );";
 
             try
             {
-                DataProvider.DataProvider.Instance.ExecuteNonQuery(query, new object[] { _customerID, _customerName, _customerAdress, _customerTel });
+                DataProvider.DataProvider.Instance.ExecuteNonQuery(query, new object[] { _customerName, _customerAdress, _customerTel });
             }
             catch (Exception)
             {
@@ -87,5 +87,26 @@ namespace Bunifu.DAO
                 throw;
             }
         }
+
+        internal Client GetCustomerByID(int _CustomID)
+        {
+            string query = "select * from khach where id_kh = @id_kh ";
+
+            try
+            {
+                DataTable dataTable = DataProvider.DataProvider.Instance.ExecuteQuery(query, new object[] { _CustomID });
+
+                foreach (DataRow item in dataTable.Rows)
+                {
+                    return new Client(item);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return null;
+        }
+
     }
 }

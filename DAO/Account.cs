@@ -91,5 +91,11 @@ namespace Bunifu.DAO
             return DataProvider.DataProvider.Instance.ExecuteQuery(query);
         }
 
+        internal string GetUserByID(int _ID)
+        {
+            string query = "select registerUser.lastName from registerUser,hdban where registerUser.id = '" + _ID + "'";
+            return DataProvider.DataProvider.Instance.GetFieldValues(query);
+        }
+
     }
 }
