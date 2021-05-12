@@ -1285,7 +1285,7 @@ namespace Bunifu
             //Cusomter
             cboInvoiceIDCustomer.Enabled = true;
             cboInvoiceIDCustomer.Focus();
-
+            cboInvoiceIDCustomer.SelectedIndex = -1;
             //Product
             cboInvoiceProduct.Enabled = true;
             txtInvoiceDiscount.Enabled = true;
@@ -1411,13 +1411,15 @@ namespace Bunifu
 
         private void btnInvoiceAddProduct_Click(object sender, EventArgs e)
         {
+            
+
             string invoiceID = lbInvoiceID.Text;
             string invoiceDate = lbInvoiceDate.Text;
             string invoiceStaffID = lbInvoiceStaffID.Text;
             string invoiceStaffName = lbInvoiceStaffName.Text;
 
 
-            int invoiceCustomerID = cboInvoiceIDCustomer.SelectedIndex;
+            int invoiceCustomerID = cboInvoiceIDCustomer.SelectedIndex + 1;
 
             string invoiceTotalPrice = lbInvoiceTotal.Text;
 
@@ -1454,6 +1456,8 @@ namespace Bunifu
                     cboInvoiceProduct.Focus();
                     return;
                 }
+
+
 
 
                 float quantity;
@@ -1624,6 +1628,20 @@ namespace Bunifu
                 throw;
             }
 
+        }
+
+        private void ClearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bunifuButton1.Enabled = false;
+            cboInvoiceProduct.SelectedIndex = -1;
+            cboInvoiceIDCustomer.SelectedIndex = -1;
+            cboInvoiceIDCustomer.Enabled = false;
+            cboInvoiceProduct.Enabled = false;
+            btnInvoiceAddProduct.Enabled = false;
+            txtInvoiceDiscount.Enabled = false;
+            txtInvoiceQuantity.Enabled = false;
+            txtInvoiceQuantity.ReadOnly = true;
+            txtInvoiceDiscount.ReadOnly = true;
         }
     }
 }
